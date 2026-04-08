@@ -3,144 +3,120 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🔮 Таро Онлайн</title>
+<title>🔮 Таро PRO AI</title>
 
 <style>
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
-  background: radial-gradient(circle at top, #1a0033, #000);
   color: white;
   text-align: center;
+  background: radial-gradient(circle at center, #14002b, #000);
 }
 
-h1 {
-  margin-top: 30px;
-  font-size: 36px;
-}
+h1 { margin-top:20px; font-size:38px; text-shadow:0 0 15px violet; }
 
-.spread {
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-  margin-top: 60px;
-  perspective: 1000px;
-}
+.spread { display:flex; justify-content:center; gap:25px; margin-top:60px; }
 
 .card {
-  width: 140px;
-  height: 230px;
-  position: relative;
-  transform-style: preserve-3d;
-  transform: rotateY(180deg);
-  transition: transform 0.8s;
-  cursor: pointer;
+  width:120px; height:200px;
+  background:linear-gradient(135deg,#6a00ff,#2a004d);
+  border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  transition:0.4s;
+  font-size:22px;
 }
 
-.card.revealed {
-  transform: rotateY(0deg);
-}
+.card:hover { transform:scale(1.1); box-shadow:0 0 20px violet; }
 
-.face {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 12px;
-  backface-visibility: hidden;
-}
-
-.front {
-  background-size: cover;
-  background-position: center;
-}
-
-.back {
-  background: linear-gradient(135deg, #6a00ff, #2a004d);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  transform: rotateY(180deg);
-}
-
-.card:hover {
-  transform: scale(1.05) rotateY(180deg);
-}
-
-.result {
-  margin-top: 40px;
-  font-size: 18px;
-  line-height: 1.6;
-}
+.result { margin-top:30px; max-width:600px; margin-left:auto; margin-right:auto; line-height:1.6; }
 
 button {
-  margin-top: 30px;
-  padding: 12px 24px;
-  border: none;
-  border-radius: 12px;
-  background: linear-gradient(45deg, gold, orange);
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 0 15px rgba(255,215,0,0.5);
+  margin-top:20px; padding:10px 20px;
+  background:gold; border:none; border-radius:10px; cursor:pointer;
 }
 
-button:hover {
-  transform: scale(1.05);
+input {
+  margin-top:20px;
+  padding:10px;
+  width:250px;
+  border-radius:10px;
+  border:none;
 }
 </style>
 </head>
 <body>
 
-<h1>🔮 Таро Онлайн</h1>
-<p>Нажми на карты и узнай своё будущее</p>
+<h1>🔮 Таро PRO AI</h1>
+<p>Задай вопрос и получи ответ как от настоящего таролога</p>
+
+<input id="question" placeholder="Например: что меня ждёт в любви?">
 
 <div class="spread" id="spread"></div>
-
 <div class="result" id="result"></div>
-
 <button onclick="newSpread()">🔄 Новый расклад</button>
 
 <script>
+
 const cards = [
-  {name:"Шут", img:"https://upload.wikimedia.org/wikipedia/commons/5/53/RWS_Tarot_00_Fool.jpg", text:"Новое начало и свобода"},
-  {name:"Маг", img:"https://upload.wikimedia.org/wikipedia/commons/d/de/RWS_Tarot_01_Magician.jpg", text:"Сила в твоих руках"},
-  {name:"Жрица", img:"https://upload.wikimedia.org/wikipedia/commons/8/88/RWS_Tarot_02_High_Priestess.jpg", text:"Интуиция и тайны"},
-  {name:"Солнце", img:"https://upload.wikimedia.org/wikipedia/commons/1/17/RWS_Tarot_19_Sun.jpg", text:"Успех и радость"},
-  {name:"Луна", img:"https://upload.wikimedia.org/wikipedia/commons/7/7f/RWS_Tarot_18_Moon.jpg", text:"Иллюзии и страхи"}
+"Шут","Маг","Жрица","Императрица","Император","Иерофант","Влюбленные","Колесница","Сила","Отшельник",
+"Колесо Фортуны","Справедливость","Повешенный","Смерть","Умеренность","Дьявол","Башня","Звезда","Луна","Солнце",
+"Суд","Мир"
 ];
 
-const positions = ["Прошлое", "Настоящее", "Будущее"];
+const positions = ["Прошлое","Настоящее","Будущее"];
 
-function newSpread() {
-  const spread = document.getElementById("spread");
-  const result = document.getElementById("result");
-  spread.innerHTML = "";
-  result.innerHTML = "";
+function interpret(card, question){
 
-  for (let i = 0; i < 3; i++) {
-    const data = cards[Math.floor(Math.random() * cards.length)];
+  const themes = {
+    "люб": "в отношениях и чувствах",
+    "день": "в финансах и работе",
+    "работ": "в карьере",
+    "жизн": "в жизни"
+  };
 
-    const card = document.createElement("div");
-    card.className = "card";
+  let topic = "в жизни";
 
-    card.innerHTML = `
-      <div class="face front" style="background-image:url('${data.img}')"></div>
-      <div class="face back">🂠</div>
-    `;
-
-    card.onclick = () => reveal(card, data, i);
-
-    spread.appendChild(card);
+  for (let key in themes) {
+    if (question.toLowerCase().includes(key)) {
+      topic = themes[key];
+    }
   }
+
+  const meanings = [
+    `Карта ${card} говорит, что сейчас происходит важный поворот ${topic}.`,
+    `${card} указывает на скрытые процессы ${topic}, которые скоро проявятся.`,
+    `${card} советует довериться себе ${topic} и не бояться перемен.`,
+    `Энергия карты ${card} показывает, что ${topic} зависит от твоего выбора.`,
+    `${card} предупреждает: будь внимателен ${topic}, есть важный урок.`
+  ];
+
+  return meanings[Math.floor(Math.random()*meanings.length)];
 }
 
-function reveal(card, data, index) {
-  if (card.classList.contains("revealed")) return;
+function newSpread(){
+  const spread = document.getElementById("spread");
+  const result = document.getElementById("result");
+  const question = document.getElementById("question").value || "твоей жизни";
 
-  card.classList.add("revealed");
+  spread.innerHTML="";
+  result.innerHTML="";
 
-  document.getElementById("result").innerHTML +=
-    `<p><b>${positions[index]}:</b> ${data.name} — ${data.text}</p>`;
+  for(let i=0;i<3;i++){
+    const cardName = cards[Math.floor(Math.random()*cards.length)];
+
+    const div=document.createElement("div");
+    div.className="card";
+    div.innerText="✨";
+
+    div.onclick=()=>{
+      div.innerText=cardName;
+      result.innerHTML+=`<p><b>${positions[i]}:</b> ${interpret(cardName, question)}</p>`;
+    };
+
+    spread.appendChild(div);
+  }
 }
 
 newSpread();
