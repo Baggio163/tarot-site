@@ -1,148 +1,70 @@
-# 🔮 Таро PRO — Полный запуск проекта
-
-Ниже — готовая структура сайта + что нужно сделать, чтобы реально запустить и зарабатывать.
-
----
-
-# 🌐 1. Фронтенд (сайт)
-
-Создай файл `index.html`:
-
-```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Таро PRO</title>
-<script src="https://js.stripe.com/v3/"></script>
+<title>Таро Онлайн</title>
 
 <style>
-body { font-family:Arial; background:#0b0014; color:white; text-align:center; }
-.card { width:140px; height:220px; margin:10px; display:inline-block; cursor:pointer; background:#333; }
-button { padding:10px 20px; margin-top:20px; }
-</style>
-</head>
-<body>
-
-<h1>🔮 Таро PRO</h1>
-
-<div id="cards"></div>
-<div id="result"></div>
-
-<button onclick="buy()">Купить доступ (€5)</button>
-
-<script>
-const cards = ["Шут","Маг","Смерть","Солнце","Луна"];
-
-function draw(){
-  const c = cards[Math.floor(Math.random()*cards.length)];
-  document.getElementById("result").innerHTML = c;
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0b0014;
+  color: white;
+  text-align: center;
 }
 
-draw();
+.spread {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 50px;
+}
 
-function buy(){
-  fetch('/create-checkout-session', { method: 'POST' })
-  .then(res => res.json())
-  .then(data => {
-    const stripe = Stripe(data.publicKey);
-    stripe.redirectToCheckout({ sessionId: data.sessionId });
-  });
+.card {
+  width: 120px;
+  height: 200px;
+  background: purple;
+  cursor: pointer;
+  border-radius: 10px;
+}
+
+button {
+  margin-top: 20px;
+  padding: 10px 20px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🔮 Таро Онлайн</h1>
+
+<div class="spread">
+  <div class="card" onclick="draw()"></div>
+  <div class="card" onclick="draw()"></div>
+  <div class="card" onclick="draw()"></div>
+</div>
+
+<div id="result"></div>
+
+<button onclick="draw()">Вытащить карту</button>
+
+<script>
+const cards = [
+  "✨ Удача близко",
+  "💔 Осторожно в любви",
+  "💰 Деньги идут",
+  "🌟 Новый шанс",
+  "⚠️ Подожди",
+  "❤️ Любовь рядом"
+];
+
+function draw() {
+  const random = Math.floor(Math.random() * cards.length);
+  document.getElementById("result").innerText = cards[random];
 }
 </script>
 
 </body>
 </html>
-```
-
----
-
-# ⚙️ 2. Бэкенд (Node.js)
-
-Создай файл `server.js`:
-
-```js
-const express = require('express');
-const Stripe = require('stripe');
-const app = express();
-
-const stripe = Stripe('sk_test_YOUR_SECRET_KEY');
-
-app.use(express.static('.'));
-app.use(express.json());
-
-app.post('/create-checkout-session', async (req, res) => {
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ['card'],
-    line_items: [{
-      price_data: {
-        currency: 'eur',
-        product_data: { name: 'Таро PRO доступ' },
-        unit_amount: 500
-      },
-      quantity: 1
-    }],
-    mode: 'payment',
-    success_url: 'http://localhost:3000/success',
-    cancel_url: 'http://localhost:3000/cancel'
-  });
-
-  res.json({ sessionId: session.id, publicKey: 'pk_test_YOUR_PUBLIC_KEY' });
-});
-
-app.listen(3000, () => console.log('Server running'));
-```
-
----
-
-# 🧠 3. Что ещё нужно добавить
-
-### 👤 Пользователи
-- Firebase Auth или Supabase
-- хранение покупок
-
-### 🃏 Полная колода
-- 78 карт
-- значения + перевёрнутые значения
-
-### 💰 Монетизация
-- подписка (€5/месяц)
-- или разовый доступ
-
-### 📱 Деплой
-- Frontend: Vercel / Netlify
-- Backend: Railway / Render
-
----
-
-# 🚀 4. Как запустить
-
-```bash
-npm init -y
-npm install express stripe
-node server.js
-```
-
-Открыть:
-👉 http://localhost:3000
-
----
-
-# 💸 Реальная стратегия заработка
-
-1. TikTok / Reels (таро-контент)
-2. Вести на сайт
-3. Бесплатный расклад → платный доступ
-
----
-
-# ⚡ Хочешь дальше?
-
-Я могу сделать:
-- 🔥 78 карт с полными значениями
-- 🎨 дизайн уровня стартапа
-- 📱 мобильную версию
-- 🤖 AI-гадания (очень мощно)
-
-Просто напиши: **"сделай максимум"** 😏
