@@ -6,141 +6,88 @@
 <title>🔮 Tarot AI Pro</title>
 
 <style>
-body {
-  margin:0;
-  font-family: 'Segoe UI', sans-serif;
-  background: radial-gradient(circle at top,#1a0033,#000);
-  color:white;
-  text-align:center;
-}
-
-h1 { margin-top:20px; }
-
-.controls { margin-top:10px; }
-
-select, input {
-  padding:10px;
-  border-radius:10px;
-  border:none;
-  margin:5px;
-}
-
-.spread {
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:center;
-  gap:15px;
-  margin-top:30px;
-}
-
-.card {
-  width:110px;
-  height:180px;
-  border-radius:12px;
-  background:#2a004d;
-  background-size:cover;
-  background-position:center;
-  cursor:pointer;
-  transition:0.4s;
-  box-shadow:0 0 10px rgba(255,0,255,0.3);
-}
-
-.card:hover {
-  transform:scale(1.1) rotateY(10deg);
-  box-shadow:0 0 20px violet;
-}
-
-.result {
-  max-width:700px;
-  margin:30px auto;
-  text-align:left;
-  line-height:1.6;
-}
-
-button {
-  margin-top:15px;
-  padding:12px 25px;
-  background:linear-gradient(45deg,gold,orange);
-  border:none;
-  border-radius:12px;
-  cursor:pointer;
-  font-weight:bold;
-}
+body {margin:0;font-family:Arial;background:radial-gradient(circle,#1a0033,#000);color:white;text-align:center;}
+.spread {display:flex;flex-wrap:wrap;justify-content:center;gap:15px;margin-top:30px;}
+.card {width:110px;height:180px;border-radius:12px;background:#2a004d;background-size:cover;background-position:center;cursor:pointer;transition:0.4s;}
+.card:hover {transform:scale(1.1);box-shadow:0 0 20px violet;}
+.result {max-width:700px;margin:30px auto;text-align:left;}
+button {padding:12px 25px;background:gold;border:none;border-radius:10px;cursor:pointer;}
 </style>
 </head>
 <body>
 
 <h1>🔮 Tarot AI Pro</h1>
-<p>Настоящий расклад с глубокой интерпретацией</p>
 
-<div class="controls">
-  <input id="question" placeholder="Твой вопрос...">
-  <select id="spreadType">
-    <option value="3">3 карты</option>
-    <option value="5">5 карт</option>
-    <option value="7" selected>7 карт</option>
-    <option value="10">Кельтский крест (10)</option>
-  </select>
-  <br>
-  <button onclick="newSpread()">🔮 Сделать расклад</button>
-</div>
+<input id="question" placeholder="Твой вопрос...">
+<select id="spreadType">
+  <option value="3">3 карты</option>
+  <option value="5">5 карт</option>
+  <option value="7" selected>7 карт</option>
+</select>
+<br><br>
+<button onclick="startReading()">🔮 Сделать расклад</button>
 
 <div class="spread" id="spread"></div>
 <div class="result" id="result"></div>
 
-<audio id="sound" src="https://assets.mixkit.co/sfx/preview/mixkit-mystery-magic-spell-227.wav"></audio>
-
 <script>
 
-const deck = [
-"fool","magician","high_priestess","empress","emperor","hierophant","lovers","chariot","strength","hermit","wheel_of_fortune","justice","hanged_man","death","temperance","devil","tower","star","moon","sun","judgement","world",
-// младшие
-...Array.from({length:56},(_,i)=>"minor_"+i)
+const cards = [
+"fool","magician","high_priestess","empress","emperor","hierophant","lovers","chariot","strength","hermit","wheel_of_fortune","justice","hanged_man","death","temperance","devil","tower","star","moon","sun","judgement","world"
 ];
 
+const meanings = {
+  fool:["новое начало","риск","неизвестность"],
+  magician:["сила воли","контроль","возможности"],
+  death:["перемены","завершение","перерождение"],
+  devil:["зависимость","искушение","ограничения"],
+  sun:["успех","радость","ясность"],
+  moon:["иллюзии","страхи","интуиция"]
+};
+
+function playSound(){
+  const audio = new Audio("https://www.soundjay.com/magic/magic-chime-01.mp3");
+  audio.play();
+}
+
 function getImage(card){
-  if(card.startsWith("minor")){
-    return "https://via.placeholder.com/200x350/2a004d/ffffff?text=Tarot";
-  }
   return `https://raw.githubusercontent.com/ekelen/tarot-api/master/static/cards/${card}.jpg`;
 }
 
-function smartInterpret(card, question){
-  const themes = [
-    "говорит о скрытых процессах",
-    "показывает переломный момент",
-    "намекает на важный выбор",
-    "связан с внутренними страхами",
-    "открывает новые возможности"
-  ];
+function generateText(card, question, position){
+  const base = meanings[card] || ["перемены","выбор","энергия"];
+  const theme = base[Math.floor(Math.random()*base.length)];
 
-  return `🔮 ${card.toUpperCase()}:\nВопрос: ${question || "без вопроса"}.\nЭта карта ${themes[Math.floor(Math.random()*themes.length)]}.\nСейчас важно прислушаться к интуиции и не игнорировать знаки.`;
+  const positions = ["прошлое","настоящее","будущее","влияние","совет","скрытое","итог"];
+
+  return `🔮 ${position.toUpperCase()}: Карта ${card}.\nВопрос: ${question || "не задан"}.\nСмысл: эта карта связана с темой "${theme}".\nЭто указывает на то, что ситуация развивается не случайно — сейчас важно осознанно действовать и учитывать этот фактор.`;
 }
 
-function newSpread(){
-  document.getElementById("sound").play();
+function startReading(){
+  playSound();
 
-  const spreadDiv = document.getElementById("spread");
-  const resultDiv = document.getElementById("result");
+  const spread = document.getElementById("spread");
+  const result = document.getElementById("result");
   const count = +document.getElementById("spreadType").value;
   const question = document.getElementById("question").value;
 
-  spreadDiv.innerHTML="";
-  resultDiv.innerHTML="";
+  const positions = ["прошлое","настоящее","будущее","влияние","совет","скрытое","итог"];
+
+  spread.innerHTML="";
+  result.innerHTML="";
 
   for(let i=0;i<count;i++){
-    const cardName = deck[Math.floor(Math.random()*deck.length)];
+    const cardName = cards[Math.floor(Math.random()*cards.length)];
 
     const card = document.createElement("div");
     card.className="card";
 
     card.onclick=()=>{
       card.style.backgroundImage=`url(${getImage(cardName)})`;
-      const text = smartInterpret(cardName, question);
-      resultDiv.innerHTML += `<p>${text}</p>`;
+      result.innerHTML += `<p>${generateText(cardName, question, positions[i])}</p>`;
     };
 
-    spreadDiv.appendChild(card);
+    spread.appendChild(card);
   }
 }
 
