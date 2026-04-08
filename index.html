@@ -12,6 +12,25 @@ body {margin:0;font-family:Arial;background:radial-gradient(circle,#1a0033,#000)
 .card:hover {transform:scale(1.1);box-shadow:0 0 20px violet;}
 .result {max-width:700px;margin:30px auto;text-align:left;}
 button {padding:12px 25px;background:gold;border:none;border-radius:10px;cursor:pointer;}
+.chat {
+  position:fixed;
+  bottom:10px;
+  right:10px;
+  width:300px;
+  background:#111;
+  border-radius:12px;
+  padding:10px;
+  box-shadow:0 0 20px violet;
+}
+.chat-messages {
+  height:200px;
+  overflow:auto;
+  font-size:14px;
+  text-align:left;
+  margin-bottom:5px;
+}
+.chat input {width:70%; padding:5px;}
+.chat button {padding:5px;}
 </style>
 </head>
 <body>
@@ -30,20 +49,18 @@ button {padding:12px 25px;background:gold;border:none;border-radius:10px;cursor:
 <div class="spread" id="spread"></div>
 <div class="result" id="result"></div>
 
+<!-- 🤖 ЧИТ ЧАТ -->
+<div class="chat">
+  <div class="chat-messages" id="chatMessages"></div>
+  <input id="chatInput" placeholder="Спроси таролога...">
+  <button onclick="sendMessage()">➤</button>
+</div>
+
 <script>
 
 const cards = [
 "fool","magician","high_priestess","empress","emperor","hierophant","lovers","chariot","strength","hermit","wheel_of_fortune","justice","hanged_man","death","temperance","devil","tower","star","moon","sun","judgement","world"
 ];
-
-const meanings = {
-  fool:["новое начало","риск","неизвестность"],
-  magician:["сила воли","контроль","возможности"],
-  death:["перемены","завершение","перерождение"],
-  devil:["зависимость","искушение","ограничения"],
-  sun:["успех","радость","ясность"],
-  moon:["иллюзии","страхи","интуиция"]
-};
 
 function playSound(){
   const audio = new Audio("https://www.soundjay.com/magic/magic-chime-01.mp3");
@@ -54,13 +71,8 @@ function getImage(card){
   return `https://raw.githubusercontent.com/ekelen/tarot-api/master/static/cards/${card}.jpg`;
 }
 
-function generateText(card, question, position){
-  const base = meanings[card] || ["перемены","выбор","энергия"];
-  const theme = base[Math.floor(Math.random()*base.length)];
-
-  const positions = ["прошлое","настоящее","будущее","влияние","совет","скрытое","итог"];
-
-  return `🔮 ${position.toUpperCase()}: Карта ${card}.\nВопрос: ${question || "не задан"}.\nСмысл: эта карта связана с темой "${theme}".\nЭто указывает на то, что ситуация развивается не случайно — сейчас важно осознанно действовать и учитывать этот фактор.`;
+function generateText(card, question){
+  return `🔮 Карта ${card}: Вопрос "${question}" связан с переменами. Доверься интуиции.`;
 }
 
 function startReading(){
@@ -70,8 +82,6 @@ function startReading(){
   const result = document.getElementById("result");
   const count = +document.getElementById("spreadType").value;
   const question = document.getElementById("question").value;
-
-  const positions = ["прошлое","настоящее","будущее","влияние","совет","скрытое","итог"];
 
   spread.innerHTML="";
   result.innerHTML="";
@@ -84,11 +94,39 @@ function startReading(){
 
     card.onclick=()=>{
       card.style.backgroundImage=`url(${getImage(cardName)})`;
-      result.innerHTML += `<p>${generateText(cardName, question, positions[i])}</p>`;
+      result.innerHTML += `<p>${generateText(cardName, question)}</p>`;
     };
 
     spread.appendChild(card);
   }
+}
+
+// 🤖 ФЕЙК AI (локальный)
+function sendMessage(){
+  const input = document.getElementById("chatInput");
+  const messages = document.getElementById("chatMessages");
+
+  const userText = input.value;
+  if(!userText) return;
+
+  messages.innerHTML += `<div>🧑: ${userText}</div>`;
+
+  const responses = [
+    "Я чувствую сильную энергию вокруг этого вопроса...",
+    "Карты говорят, что ситуация скоро изменится.",
+    "Тебе важно довериться интуиции.",
+    "Ответ уже внутри тебя.",
+    "Это не случайно, что ты спросил это сейчас."
+  ];
+
+  const botText = responses[Math.floor(Math.random()*responses.length)];
+
+  setTimeout(()=>{
+    messages.innerHTML += `<div>🔮 Чит: ${botText}</div>`;
+    messages.scrollTop = messages.scrollHeight;
+  },500);
+
+  input.value="";
 }
 
 </script>
