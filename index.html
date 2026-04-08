@@ -3,123 +3,147 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🔮 Таро PRO AI</title>
+<title>🔮 Tarot AI Pro</title>
 
 <style>
 body {
-  margin: 0;
+  margin:0;
   font-family: 'Segoe UI', sans-serif;
-  color: white;
-  text-align: center;
-  background: radial-gradient(circle at center, #14002b, #000);
+  background: radial-gradient(circle at top,#1a0033,#000);
+  color:white;
+  text-align:center;
 }
 
-h1 { margin-top:20px; font-size:38px; text-shadow:0 0 15px violet; }
+h1 { margin-top:20px; }
 
-.spread { display:flex; justify-content:center; gap:25px; margin-top:60px; }
+.controls { margin-top:10px; }
 
-.card {
-  width:120px; height:200px;
-  background:linear-gradient(135deg,#6a00ff,#2a004d);
-  border-radius:12px;
-  display:flex; align-items:center; justify-content:center;
-  cursor:pointer;
-  transition:0.4s;
-  font-size:22px;
-}
-
-.card:hover { transform:scale(1.1); box-shadow:0 0 20px violet; }
-
-.result { margin-top:30px; max-width:600px; margin-left:auto; margin-right:auto; line-height:1.6; }
-
-button {
-  margin-top:20px; padding:10px 20px;
-  background:gold; border:none; border-radius:10px; cursor:pointer;
-}
-
-input {
-  margin-top:20px;
+select, input {
   padding:10px;
-  width:250px;
   border-radius:10px;
   border:none;
+  margin:5px;
+}
+
+.spread {
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:15px;
+  margin-top:30px;
+}
+
+.card {
+  width:110px;
+  height:180px;
+  border-radius:12px;
+  background:#2a004d;
+  background-size:cover;
+  background-position:center;
+  cursor:pointer;
+  transition:0.4s;
+  box-shadow:0 0 10px rgba(255,0,255,0.3);
+}
+
+.card:hover {
+  transform:scale(1.1) rotateY(10deg);
+  box-shadow:0 0 20px violet;
+}
+
+.result {
+  max-width:700px;
+  margin:30px auto;
+  text-align:left;
+  line-height:1.6;
+}
+
+button {
+  margin-top:15px;
+  padding:12px 25px;
+  background:linear-gradient(45deg,gold,orange);
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:bold;
 }
 </style>
 </head>
 <body>
 
-<h1>🔮 Таро PRO AI</h1>
-<p>Задай вопрос и получи ответ как от настоящего таролога</p>
+<h1>🔮 Tarot AI Pro</h1>
+<p>Настоящий расклад с глубокой интерпретацией</p>
 
-<input id="question" placeholder="Например: что меня ждёт в любви?">
+<div class="controls">
+  <input id="question" placeholder="Твой вопрос...">
+  <select id="spreadType">
+    <option value="3">3 карты</option>
+    <option value="5">5 карт</option>
+    <option value="7" selected>7 карт</option>
+    <option value="10">Кельтский крест (10)</option>
+  </select>
+  <br>
+  <button onclick="newSpread()">🔮 Сделать расклад</button>
+</div>
 
 <div class="spread" id="spread"></div>
 <div class="result" id="result"></div>
-<button onclick="newSpread()">🔄 Новый расклад</button>
+
+<audio id="sound" src="https://assets.mixkit.co/sfx/preview/mixkit-mystery-magic-spell-227.wav"></audio>
 
 <script>
 
-const cards = [
-"Шут","Маг","Жрица","Императрица","Император","Иерофант","Влюбленные","Колесница","Сила","Отшельник",
-"Колесо Фортуны","Справедливость","Повешенный","Смерть","Умеренность","Дьявол","Башня","Звезда","Луна","Солнце",
-"Суд","Мир"
+const deck = [
+"fool","magician","high_priestess","empress","emperor","hierophant","lovers","chariot","strength","hermit","wheel_of_fortune","justice","hanged_man","death","temperance","devil","tower","star","moon","sun","judgement","world",
+// младшие
+...Array.from({length:56},(_,i)=>"minor_"+i)
 ];
 
-const positions = ["Прошлое","Настоящее","Будущее"];
-
-function interpret(card, question){
-
-  const themes = {
-    "люб": "в отношениях и чувствах",
-    "день": "в финансах и работе",
-    "работ": "в карьере",
-    "жизн": "в жизни"
-  };
-
-  let topic = "в жизни";
-
-  for (let key in themes) {
-    if (question.toLowerCase().includes(key)) {
-      topic = themes[key];
-    }
+function getImage(card){
+  if(card.startsWith("minor")){
+    return "https://via.placeholder.com/200x350/2a004d/ffffff?text=Tarot";
   }
+  return `https://raw.githubusercontent.com/ekelen/tarot-api/master/static/cards/${card}.jpg`;
+}
 
-  const meanings = [
-    `Карта ${card} говорит, что сейчас происходит важный поворот ${topic}.`,
-    `${card} указывает на скрытые процессы ${topic}, которые скоро проявятся.`,
-    `${card} советует довериться себе ${topic} и не бояться перемен.`,
-    `Энергия карты ${card} показывает, что ${topic} зависит от твоего выбора.`,
-    `${card} предупреждает: будь внимателен ${topic}, есть важный урок.`
+function smartInterpret(card, question){
+  const themes = [
+    "говорит о скрытых процессах",
+    "показывает переломный момент",
+    "намекает на важный выбор",
+    "связан с внутренними страхами",
+    "открывает новые возможности"
   ];
 
-  return meanings[Math.floor(Math.random()*meanings.length)];
+  return `🔮 ${card.toUpperCase()}:\nВопрос: ${question || "без вопроса"}.\nЭта карта ${themes[Math.floor(Math.random()*themes.length)]}.\nСейчас важно прислушаться к интуиции и не игнорировать знаки.`;
 }
 
 function newSpread(){
-  const spread = document.getElementById("spread");
-  const result = document.getElementById("result");
-  const question = document.getElementById("question").value || "твоей жизни";
+  document.getElementById("sound").play();
 
-  spread.innerHTML="";
-  result.innerHTML="";
+  const spreadDiv = document.getElementById("spread");
+  const resultDiv = document.getElementById("result");
+  const count = +document.getElementById("spreadType").value;
+  const question = document.getElementById("question").value;
 
-  for(let i=0;i<3;i++){
-    const cardName = cards[Math.floor(Math.random()*cards.length)];
+  spreadDiv.innerHTML="";
+  resultDiv.innerHTML="";
 
-    const div=document.createElement("div");
-    div.className="card";
-    div.innerText="✨";
+  for(let i=0;i<count;i++){
+    const cardName = deck[Math.floor(Math.random()*deck.length)];
 
-    div.onclick=()=>{
-      div.innerText=cardName;
-      result.innerHTML+=`<p><b>${positions[i]}:</b> ${interpret(cardName, question)}</p>`;
+    const card = document.createElement("div");
+    card.className="card";
+
+    card.onclick=()=>{
+      card.style.backgroundImage=`url(${getImage(cardName)})`;
+      const text = smartInterpret(cardName, question);
+      resultDiv.innerHTML += `<p>${text}</p>`;
     };
 
-    spread.appendChild(div);
+    spreadDiv.appendChild(card);
   }
 }
 
-newSpread();
 </script>
 
 </body>
